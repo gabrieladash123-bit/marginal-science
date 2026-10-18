@@ -1,0 +1,26 @@
+[
+  {
+    "text": "We examine uncertainty in language models and evaluate calibration on scientific abstracts. The analysis considers confidence intervals, paired comparisons, and changes in the input distribution.",
+    "probabilities": [
+      0.6110177904673818,
+      0.3887234992112529,
+      0.0002587103213654489
+    ]
+  },
+  {
+    "text": "In conclusion, this comprehensive study highlights the significant potential of an innovative framework. Furthermore, the findings underscore the importance of future research and practical applications.",
+    "probabilities": [
+      6.17812969362251e-06,
+      0.3492355199007432,
+      0.6507583019695632
+    ]
+  },
+  {
+    "text": "We don't infer causality from p < 0.05. The sample contains 240 observations [12]. $x^2 + y^2$ and @math12 are preserved; na\u00efve measurements require further analysis.",
+    "probabilities": [
+      0.8132638116172823,
+      0.18509093954118908,
+      0.0016452488415286683
+    ]
+  }
+]

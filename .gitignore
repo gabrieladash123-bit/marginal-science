@@ -2,6 +2,7 @@ node_modules/
 dist/
 .vercel/
 .python/
+.venv/
 .cache/
 .env*
 /artifacts/

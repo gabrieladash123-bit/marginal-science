@@ -1,0 +1,255 @@
+{
+  "name": "Scientific abstract classifier",
+  "version": "scihra-tfidf-1",
+  "trainedAt": "2026-10-18T12:00:19.666950+00:00",
+  "seed": 1729,
+  "modelSha256": "d570e867543ba3d6b7d8ed3959ecf9817a76dce2e5780bb26f02e40d735eb6c5",
+  "dataset": {
+    "name": "SciHRA-Detect",
+    "url": "https://github.com/mithuGit/SciHRA-Detect",
+    "commit": "99fa3644a68563081a14fcbda7842b20f358cb91",
+    "download": "https://raw.githubusercontent.com/mithuGit/SciHRA-Detect/99fa3644a68563081a14fcbda7842b20f358cb91/data/scihra_detect.csv.zip",
+    "sha256": "c72ff4376c53263885aa97f11a827cf4c9c33285f8d689c2f298f6098a9fff51",
+    "papers": 2932,
+    "groups": 2932,
+    "samples": 8796,
+    "domains": 11,
+    "generator": "GPT-4o",
+    "author": "Mithusan Naguleswaran",
+    "license": "Apache-2.0 repository license"
+  },
+  "split": {
+    "train": {
+      "samples": 5277,
+      "papers": 1759,
+      "groups": 1759
+    },
+    "validation": {
+      "samples": 1758,
+      "papers": 586,
+      "groups": 586
+    },
+    "test": {
+      "samples": 1761,
+      "papers": 587,
+      "groups": 587
+    }
+  },
+  "features": 18000,
+  "selectedC": 6.0,
+  "temperature": 0.44531206607108376,
+  "experiments": [
+    {
+      "name": "Logistic regression C=0.5",
+      "c": 0.5,
+      "validationMacroF1": 0.9349867371876043,
+      "validationAccuracy": 0.9357224118316269
+    },
+    {
+      "name": "Logistic regression C=2",
+      "c": 2.0,
+      "validationMacroF1": 0.9490922939708614,
+      "validationAccuracy": 0.9493742889647326
+    },
+    {
+      "name": "Logistic regression C=6",
+      "c": 6.0,
+      "validationMacroF1": 0.9531066961295721,
+      "validationAccuracy": 0.9533560864618885
+    }
+  ],
+  "test": {
+    "accuracy": 0.9596819988642816,
+    "macroF1": 0.9596926130773603,
+    "logLoss": 0.11016947520191342,
+    "ece": 0.009522885311267878,
+    "accuracyInterval": [
+      0.9500283929585462,
+      0.9687819420783645
+    ],
+    "coverage": 0.9619534355479841,
+    "selectiveAccuracy": 0.973435655253837,
+    "humanFalsePositiveRate": 0.013628620102214651,
+    "confusion": [
+      [
+        571,
+        13,
+        3
+      ],
+      [
+        8,
+        550,
+        29
+      ],
+      [
+        1,
+        17,
+        569
+      ]
+    ],
+    "perClass": {
+      "human": {
+        "precision": 0.9844827586206897,
+        "recall": 0.9727427597955707,
+        "f1-score": 0.9785775492716366,
+        "support": 587.0
+      },
+      "revised": {
+        "precision": 0.9482758620689655,
+        "recall": 0.9369676320272572,
+        "f1-score": 0.9425878320479862,
+        "support": 587.0
+      },
+      "generated": {
+        "precision": 0.9467554076539102,
+        "recall": 0.969335604770017,
+        "f1-score": 0.9579124579124579,
+        "support": 587.0
+      },
+      "accuracy": 0.9596819988642816,
+      "macro avg": {
+        "precision": 0.959838009447855,
+        "recall": 0.9596819988642817,
+        "f1-score": 0.9596926130773603,
+        "support": 1761.0
+      },
+      "weighted avg": {
+        "precision": 0.959838009447855,
+        "recall": 0.9596819988642816,
+        "f1-score": 0.9596926130773602,
+        "support": 1761.0
+      }
+    },
+    "domains": [
+      {
+        "domain": "Area Studies",
+        "samples": 177,
+        "accuracy": 0.9548022598870056,
+        "macroF1": 0.9550147447698812
+      },
+      {
+        "domain": "Business & Economics",
+        "samples": 174,
+        "accuracy": 0.9540229885057471,
+        "macroF1": 0.9538144992326911
+      },
+      {
+        "domain": "PMC",
+        "samples": 180,
+        "accuracy": 0.9277777777777778,
+        "macroF1": 0.9281254185565642
+      },
+      {
+        "domain": "Social Sciences",
+        "samples": 177,
+        "accuracy": 0.9322033898305084,
+        "macroF1": 0.9325748183257812
+      },
+      {
+        "domain": "astro-ph",
+        "samples": 180,
+        "accuracy": 0.9722222222222222,
+        "macroF1": 0.9721716393519167
+      },
+      {
+        "domain": "cond-mat",
+        "samples": 180,
+        "accuracy": 0.9611111111111111,
+        "macroF1": 0.9608635554984288
+      },
+      {
+        "domain": "cs",
+        "samples": 84,
+        "accuracy": 0.9880952380952381,
+        "macroF1": 0.9880914407230197
+      },
+      {
+        "domain": "cs.CL",
+        "samples": 96,
+        "accuracy": 0.9791666666666666,
+        "macroF1": 0.9791666666666666
+      },
+      {
+        "domain": "math",
+        "samples": 156,
+        "accuracy": 0.9743589743589743,
+        "macroF1": 0.9742961461408064
+      },
+      {
+        "domain": "nlin",
+        "samples": 177,
+        "accuracy": 0.9887005649717514,
+        "macroF1": 0.9887001591886936
+      },
+      {
+        "domain": "stat.AP",
+        "samples": 180,
+        "accuracy": 0.95,
+        "macroF1": 0.949839043351609
+      }
+    ],
+    "reliability": [
+      {
+        "confidence": 0.46690412109124396,
+        "accuracy": 0.3333333333333333,
+        "count": 3
+      },
+      {
+        "confidence": 0.5505791906060999,
+        "accuracy": 0.6363636363636364,
+        "count": 44
+      },
+      {
+        "confidence": 0.6541604610242427,
+        "accuracy": 0.6744186046511628,
+        "count": 43
+      },
+      {
+        "confidence": 0.7544591454349717,
+        "accuracy": 0.7586206896551724,
+        "count": 58
+      },
+      {
+        "confidence": 0.8576379386240792,
+        "accuracy": 0.8790322580645161,
+        "count": 124
+      },
+      {
+        "confidence": 0.9873544609098764,
+        "accuracy": 0.9932840832773674,
+        "count": 1489
+      }
+    ]
+  },
+  "baselines": [
+    {
+      "name": "Uniform chance",
+      "accuracy": 0.3333333333333333,
+      "macroF1": 0.3333333333333333
+    },
+    {
+      "name": "Multinomial Naive Bayes",
+      "accuracy": 0.8779102782509938,
+      "macroF1": 0.8749366768882464
+    }
+  ],
+  "checks": {
+    "paperOverlap": 0,
+    "exactTextOverlap": 0,
+    "vectorizerFit": "training only",
+    "hyperparameterSelection": "validation only",
+    "temperatureFit": "validation only",
+    "testUse": "final evaluation only"
+  },
+  "limitations": [
+    "English scientific abstracts from one public corpus; performance on other writing and newer generators is unvalidated.",
+    "Dataset style, source formatting and topic can confound classification. Scores do not establish authorship.",
+    "Human, AI-revised and AI-generated references overlap. Mixed writing and short passages may be indeterminate.",
+    "Revisions require author review; no automated test can guarantee preservation of every scientific claim."
+  ],
+  "trainingSeconds": 9.14,
+  "libraries": {
+    "scikit-learn": "1.7.2",
+    "numpy": "2.2.6"
+  }
+}
