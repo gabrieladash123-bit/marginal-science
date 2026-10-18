@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.vercel/
+.python/
+.cache/
+.env*
+/artifacts/
+ml/data/
+__pycache__/
+test-results/
+playwright-report/
+*.tsbuildinfo
