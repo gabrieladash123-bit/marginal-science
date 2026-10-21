@@ -17,6 +17,7 @@ try{
     const next=await page.locator('.model-progress').textContent().catch(()=>null);
     if(next&&next!==status){status=next;console.log(status);}
     if(await page.locator('.model-draft').count())break;
+    if(await page.getByRole('textbox',{name:'Scientific abstract',exact:true}).inputValue()!==original)break;
     if(await page.locator('.alert.error').count()||await page.getByText('No model edits passed the checks.',{exact:false}).count())break;
     await page.waitForTimeout(3000);
     }

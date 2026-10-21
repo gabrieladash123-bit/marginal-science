@@ -15,7 +15,8 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npx playwright install --with-deps chromium
-      - run: node node_modules/vite/bin/vite.js --host 127.0.0.1 > /tmp/marginal-vite.log 2>&1 &
+      - run: npm run build
+      - run: node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 5173 > /tmp/marginal-vite.log 2>&1 &
       - run: node scripts/rewrite-check.mjs
         env:
           APP_URL: http://127.0.0.1:5173

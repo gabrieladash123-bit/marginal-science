@@ -11,7 +11,7 @@ self.onmessage=async(event:MessageEvent<{text:string}>)=>{
       progress_callback:(progress:unknown)=>self.postMessage({type:'progress',progress}),
     }) as unknown as typeof generator;
     const result=await rewriteBySentence(event.data.text,async sentence=>{
-      const generated=await (generator as any)(`Paraphrase this sentence without adding or removing information. Keep numbers, citations and uncertainty unchanged. Return only the sentence.\n\n${sentence}`,{max_new_tokens:Math.min(320,Math.max(48,Math.ceil(wordCount(sentence)*2.4))),do_sample:false,repetition_penalty:1.1});
+      const generated=await (generator as any)(`Paraphrase this sentence: ${sentence}`,{max_new_tokens:Math.min(110,Math.max(24,Math.ceil(wordCount(sentence)*1.6)+8)),do_sample:false,repetition_penalty:1.1});
       return generated[0].generated_text;
     },(index,total)=>self.postMessage({type:'working',index,total}));
     self.postMessage({type:'result',...result});
