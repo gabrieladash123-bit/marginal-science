@@ -9,5 +9,5 @@ export default defineConfig({
       const response=await handleAnalysis(request);res.statusCode=response.status;response.headers.forEach((v,k)=>res.setHeader(k,v));res.end(await response.text());
     }catch{res.statusCode=500;res.end(JSON.stringify({error:'The local analysis service is unavailable.'}));}
   });}}],
-  build:{target:'es2022',chunkSizeWarningLimit:1800},server:{port:5173}
+  build:{target:'es2022',chunkSizeWarningLimit:1800},server:{port:5173,watch:{ignored:['**/artifacts/**','**/.python/**','**/.cache/**','**/.venv/**']}}
 });
