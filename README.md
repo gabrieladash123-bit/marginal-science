@@ -43,7 +43,7 @@ The UI returns inconclusive for confidence below 65%, known-vocabulary coverage 
 
 Clarity review applies explicit, individually selectable phrase edits, with undo. Citations, numerical values, quotations, uppercase notation and Greek symbols are checked before applying a draft. These checks cannot prove preservation of every scientific claim; the author reviews meaning.
 
-The optional local model is `Xenova/LaMini-Flan-T5-77M`, pinned to revision `ac7ed8dcdab558daa9d648678e8545a919a81f85`, through Transformers.js 3.8.1. It downloads about 120 MB including the runtime on first use and runs in a web worker. It supports drafts up to 220 words, with cancellation and a five-minute timeout. Failed preservation/retention checks block its output and leave the original intact. The conservative clarity tool remains available when the model fails or downloads are blocked. The app does not optimize text against detector scores or promise detector evasion.
+The optional local model is `Xenova/LaMini-Flan-T5-77M`, pinned to revision `ac7ed8dcdab558daa9d648678e8545a919a81f85`, through Transformers.js 3.8.1. It downloads about 120 MB including the runtime on first use and runs in a web worker. It supports drafts up to 220 words, with cancellation and a five-minute timeout. Each sentence is revised separately; failed protected-value, lexical-retention or explicit qualifier checks retain that original sentence. A final manuscript check runs before review. These checks cannot establish semantic equivalence. The conservative clarity tool remains available when the model fails or downloads are blocked. The app does not optimize text against detector scores or promise detector evasion.
 
 ## Verification and deployment
 
@@ -56,7 +56,7 @@ vercel --prod
 
 `/api/health` exposes serving model identity. `/api/analyze` accepts JSON `{ "text": "..." }` via POST and returns probabilities, uncertainty, term contributions, writing statistics, and measured model-inference time. Responses disable caching. The API rejects invalid/oversized input without echoing text in errors. A deployment needs no database or credential to run its main workflow.
 
-`node scripts/check-deployment.mjs` checks the public API against local predictions and verifies input rejection. `APP_URL=https://marginal-science.vercel.app node scripts/browser-check.mjs` checks the deployed editor, revision review, undo, navigation and responsive layouts (requires Chrome). The manually dispatched `Verify browser-local rewrite` workflow checks model downloading and draft generation in Chromium and saves its report and screenshot as an artifact.
+`node scripts/check-deployment.mjs` checks the public API against local predictions and verifies input rejection. `APP_URL=https://marginal-science.vercel.app node scripts/browser-check.mjs` checks the deployed editor, revision review, undo, navigation and responsive layouts (requires Chrome). The manually dispatched `Verify browser-local rewrite` workflow starts the app, checks model downloading, draft generation, application and undo in Chromium, and saves its report and screenshot as an artifact.
 
 ## Attribution
 
