@@ -2,6 +2,8 @@
 
 A scientific-writing ML portfolio project: an evaluated three-class text classifier, an editable manuscript workspace, reviewed clarity edits, and optional browser-local neural rewriting.
 
+[Open the live workspace](https://marginal-science.vercel.app)
+
 ## Run
 
 ```bash
@@ -47,11 +49,14 @@ The optional local model is `Xenova/LaMini-Flan-T5-77M`, pinned to revision `ac7
 
 ```bash
 npm test
+npm run test:runtime
 npm run build
 vercel --prod
 ```
 
 `/api/health` exposes serving model identity. `/api/analyze` accepts JSON `{ "text": "..." }` via POST and returns probabilities, uncertainty, term contributions, writing statistics, and measured model-inference time. Responses disable caching. The API rejects invalid/oversized input without echoing text in errors. A deployment needs no database or credential to run its main workflow.
+
+`node scripts/check-deployment.mjs` checks the public API against local predictions and verifies input rejection. `APP_URL=https://marginal-science.vercel.app node scripts/browser-check.mjs` checks the deployed editor, revision review, undo, navigation and responsive layouts (requires Chrome). The manually dispatched `Verify browser-local rewrite` workflow checks model downloading and draft generation in Chromium and saves its report and screenshot as an artifact.
 
 ## Attribution
 
