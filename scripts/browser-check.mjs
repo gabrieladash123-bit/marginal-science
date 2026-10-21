@@ -3,7 +3,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const base=process.env.APP_URL??'http://127.0.0.1:5173';
 await mkdir('artifacts/browser',{recursive:true});
-const browser=await chromium.launch({channel:'chrome',headless:true});
+const browser=await chromium.launch({channel:process.env.CI?undefined:'chrome',headless:true});
 try{
   const context=await browser.newContext({viewport:{width:1440,height:1060}});
   const page=await context.newPage();const errors=[];

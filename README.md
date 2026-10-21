@@ -58,6 +58,8 @@ vercel --prod
 
 `node scripts/check-deployment.mjs` checks the public API against local predictions and verifies input rejection. `APP_URL=https://marginal-science.vercel.app node scripts/browser-check.mjs` checks the deployed editor, revision review, undo, navigation and responsive layouts (requires Chrome). The manually dispatched `Verify browser-local rewrite` workflow starts the app, checks model downloading, draft generation, application and undo in Chromium, and saves its report and screenshot as an artifact.
 
+`Verify public deployment` runs the API parity and responsive browser checks against the public Vercel URL from a Linux runner, independently of the developer's local network.
+
 ## Attribution
 
 - Dataset: [SciHRA-Detect](https://github.com/mithuGit/SciHRA-Detect), Mithusan Naguleswaran, TU Darmstadt, 2025. Repository license: Apache 2.0. Original publications retain their rights; full texts are not bundled or redistributed here.
