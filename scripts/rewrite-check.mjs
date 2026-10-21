@@ -1,7 +1,7 @@
 import {chromium,expect} from '@playwright/test';
 import {writeFile,mkdir} from 'node:fs/promises';
 await mkdir('artifacts/browser',{recursive:true});
-const browser=await chromium.launchPersistentContext('artifacts/browser/rewrite-profile',{channel:'chrome',headless:true,viewport:{width:1440,height:1000}});
+const browser=await chromium.launchPersistentContext('artifacts/browser/rewrite-profile',{channel:process.env.CI?undefined:'chrome',headless:true,viewport:{width:1440,height:1000}});
 try{
   const page=browser.pages()[0]??await browser.newPage();
   const failures=[];page.on('pageerror',error=>failures.push(error.message));

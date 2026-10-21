@@ -1,6 +1,6 @@
 {
   "name":"marginal-science", "version":"1.0.0", "private":true, "type":"module",
-  "scripts":{"dev":"vite --host 127.0.0.1","build":"tsc --noEmit && vite build","preview":"vite preview --host 127.0.0.1","test":"node --experimental-strip-types --test tests/*.test.ts"},
+  "scripts":{"dev":"vite --host 127.0.0.1","build":"tsc --noEmit && vite build","preview":"vite preview --host 127.0.0.1","test":"node --experimental-strip-types --test tests/*.test.ts","test:runtime":"tsc --noEmit false --outDir artifacts/runtime-check && node scripts/check-runtime.mjs"},
   "dependencies":{"react":"19.3.1","react-dom":"19.3.1","@phosphor-icons/react":"2.1.10","@huggingface/transformers":"3.8.1","@fontsource/geist":"5.2.8","@fontsource/source-serif-4":"5.2.8","@fontsource/geist-mono":"5.2.6"},
   "devDependencies":{"vite":"7.3.6","typescript":"5.9.3","@types/node":"22.19.19","@types/react":"19.2.0","@types/react-dom":"19.2.0","@playwright/test":"1.63.0"},
   "engines":{"node":"24.x"}
