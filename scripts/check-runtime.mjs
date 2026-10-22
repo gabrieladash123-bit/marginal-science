@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {POST} from '../artifacts/runtime-check/api/analyze.js';
 import {GET} from '../artifacts/runtime-check/api/health.js';
+import {POST as robustness} from '../artifacts/runtime-check/api/robustness.js';
+import {verifyProbeReport} from '../artifacts/runtime-check/lib/probe-report.js';
 import {exampleText} from '../artifacts/runtime-check/src/examples.js';
 const health=await GET().json();
 const response=await POST(new Request('https://runtime-check.test/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:exampleText})}));
@@ -9,4 +11,7 @@ const prediction=await response.json();
 assert.equal(prediction.model.sha256,health.sha256);
 assert.equal(prediction.probabilities.length,3);
 assert.ok(prediction.probabilities.every(Number.isFinite));
+const probes=await robustness(new Request('https://runtime-check.test/api/robustness',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:exampleText})}));
+assert.equal(probes.status,200);
+assert.equal((await verifyProbeReport(await probes.json(),exampleText)).cases.length,5);
 console.log(JSON.stringify({compiledServerEntry:'VERIFIED',model:health.model}));

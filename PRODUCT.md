@@ -15,6 +15,8 @@ Considered, precise, humane.
 - Separate empirical classification evidence from writing advice.
 - Keep dataset provenance and actual model measurements inspectable.
 - Preserve citations and quantities; require the author to review scientific meaning.
+- Keep revision history and claim changes inspectable in a local research notebook.
+- Expose model sensitivity with reproducible probes and explicit scope limits.
 
 ## Anti-references
 No alarmist plagiarism-checker UI, guaranteed authorship claims, detector-evasion claims, invented benchmark numbers, or generic neon AI landing page.

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {analyze} from '../lib/service.ts';
 import {exampleText} from '../src/examples.ts';
+import {verifyProbeReport} from '../lib/probe-report.ts';
 const base=(process.argv[2]??'https://marginal-science.vercel.app').replace(/\/$/,'');
 const local=analyze({text:exampleText});
 const healthResponse=await fetch(`${base}/api/health`,{signal:AbortSignal.timeout(30000)});
@@ -22,4 +23,7 @@ for(const [body,type,status] of [['{"text":','application/json',422],[JSON.strin
   assert.equal(rejected.status,status);
   assert.equal(typeof (await rejected.json()).error,'string');
 }
-console.log(JSON.stringify({url:base,public:true,model:health.model,sha256:health.sha256,predictionParity:'VERIFIED',invalidRequests:'VERIFIED',inferenceMs:prediction.elapsedMs}));
+const probeResponse=await fetch(`${base}/api/robustness`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:exampleText}),signal:AbortSignal.timeout(30000)});
+assert.equal(probeResponse.status,200);assert.equal(probeResponse.headers.get('cache-control'),'no-store');
+const probes=await verifyProbeReport(await probeResponse.json(),exampleText);
+console.log(JSON.stringify({url:base,public:true,model:health.model,sha256:health.sha256,predictionParity:'VERIFIED',invalidRequests:'VERIFIED',robustnessProbes:probes.cases.length,inferenceMs:prediction.elapsedMs}));

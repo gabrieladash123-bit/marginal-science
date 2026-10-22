@@ -22,5 +22,7 @@ Product register with the restrained Stitch system. Compact top navigation rathe
 ## Interaction
 Analyze is the main action. Editing invalidates old results. Revisions show exact before/after changes and preserve an undo snapshot. A running local model has download progress and cancellation. Empty/error states give an actionable recovery path. Motion uses opacity/transform at 160ms and respects reduced motion.
 
+The Workspace contains Writing workspace and Research notebook modes sharing one manuscript. The notebook pairs a baseline with the current draft, uses a flat expandable claim ledger, and exposes model probes below the comparison. It retains the same light canvas, paper typography and action tokens. Checkpoints and review import/export use explicit actions; no manuscript persistence is implied. Scientific flags carry text explanations and never imply a proof of correctness.
+
 ## References
 Phoenix's separation of datasets, evaluations, and experiments informs the model report. Scientific typesetting informs the paper surface; the app chrome remains a compact familiar product interface.

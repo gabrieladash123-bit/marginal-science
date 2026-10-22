@@ -1,9 +1,10 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowRight,ArrowUpRight,ArrowCounterClockwise,ArrowLineDown,ArrowSquareOut,BookOpen,ChartBar,Check,CheckCircle,Clipboard,Code,FileText,Flask,GithubLogo,Info,Leaf,MagnifyingGlass,ShieldCheck,Sparkle,WarningCircle,X} from '@phosphor-icons/react';
-import report from '../ml/artifacts/report.json';
+import report from '../ml/artifacts/report.json' with {type:'json'};
 import type {Analysis} from '../lib/service.ts';
 import {applyEdits,clarityEdits,protectedValues,validateRewrite,wordCount,writingStats,type Edit} from '../lib/writing.ts';
 import {exampleText,exampleTitle,conciseExample,sourceUrl} from './examples.ts';
+import ResearchNotebook from './ResearchNotebook.tsx';
 
 type View='workspace'|'model'|'system';
 const labels=['Human-written references','AI-revised references','AI-generated references'];
@@ -23,6 +24,7 @@ export default function App(){
 }
 
 function Workspace(){
+  const [mode,setMode]=useState<'writing'|'notebook'>('writing');
   const [text,setText]=useState(exampleText);const [title,setTitle]=useState(exampleTitle);
   const [analysis,setAnalysis]=useState<Analysis|null>(null);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
   const [panel,setPanel]=useState<'signals'|'review'>('signals');const [example,setExample]=useState(true);
@@ -67,7 +69,8 @@ function Workspace(){
   function cancelModel(){worker.current?.terminate();worker.current=null;clearTimeout(modelTimer.current);setModelBusy(false);setModelProgress('');}
   return <>
     <section className="workspace-heading"><div><div className="context-line"><Leaf size={15} weight="bold"/>A little perspective for your paper</div><h1>Your research. Your voice.</h1><p>Understand the writing. Refine the language. Keep the science intact.</p></div><button className="button secondary example-button" onClick={()=>loadExample()}><BookOpen size={17}/>Try an example<ArrowRight size={15}/></button></section>
-    <div className="workspace-layout"><section className="editor-surface" aria-label="Manuscript editor">
+    <div className="workspace-modes" aria-label="Workspace tools"><button aria-pressed={mode==='writing'} onClick={()=>setMode('writing')}>Writing workspace</button><button aria-pressed={mode==='notebook'} onClick={()=>setMode('notebook')}>Research notebook<Flask size={15}/></button><span>Compare claims. Inspect model stability.</span></div>
+    <div hidden={mode!=='writing'}><div className="workspace-layout"><section className="editor-surface" aria-label="Manuscript editor">
       <div className="editor-toolbar"><span className="document-type"><FileText size={18}/>Research abstract</span><div className="toolbar-actions"><button className="icon-button" onClick={copy} aria-label="Copy manuscript" title="Copy manuscript">{copied?<Check size={18}/>:<Clipboard size={18}/>}</button><button className="icon-button" onClick={download} aria-label="Export manuscript" title="Export manuscript"><ArrowLineDown size={18}/></button></div></div>
       <div className="paper"><div className="paper-meta"><span>{example?'Illustrative example':'Your manuscript'}</span><span>English</span></div><textarea className="paper-title" aria-label="Manuscript title" rows={2} value={title} onChange={event=>setTitle(event.target.value)} maxLength={140}/>
         <div className="abstract-label">Abstract</div><textarea ref={textarea} aria-label="Scientific abstract" className="manuscript" value={text} spellCheck onChange={event=>update(event.target.value)} onKeyDown={event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter'&&canAnalyze){event.preventDefault();void runAnalysis();}}} placeholder="Paste your scientific abstract here. Use at least 60 words for analysis."/>
@@ -101,7 +104,8 @@ function Workspace(){
         </>}
       </div></aside></div>
     <section className="below-workspace"><div><ShieldCheck size={22}/><div><strong>Your ideas stay yours.</strong><p>Analysis is processed without app storage. Local rewrites run in your browser.</p></div></div><div><BookOpen size={22}/><div><strong>Built around research writing.</strong><p>Evidence from scientific abstracts, with uncertainty and limitations in view.</p></div></div><a href="#model">Read the model report<ArrowUpRight size={17}/></a></section>
-    <div className="example-footnote">Examples are illustrative text, not experimental findings. <button onClick={()=>loadExample(true)}>Try the concise version</button></div>
+    <div className="example-footnote">Examples are illustrative text, not experimental findings. <button onClick={()=>loadExample(true)}>Try the concise version</button></div></div>
+    <div hidden={mode!=='notebook'}><ResearchNotebook text={text} title={title} onLoad={(value,nextTitle)=>{update(value);setTitle(nextTitle);}}/></div>
   </>;
 }
 

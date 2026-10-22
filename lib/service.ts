@@ -16,16 +16,17 @@ export function analyze(input:unknown){
     scope:stats.words>400?'Longer than most training abstracts. Interpret cautiously.':'English scientific abstracts; similarity to this dataset does not establish authorship.'};
 }
 export type Analysis=ReturnType<typeof analyze>;
-export async function handleAnalysis(request:Request){
+export async function handleTextRequest(request:Request,processor:(input:unknown)=>unknown|Promise<unknown>){
   if(request.method!=='POST')return Response.json({error:'Use POST for text analysis.'},{status:405,headers:{Allow:'POST'}});
   if(!request.headers.get('content-type')?.includes('application/json'))return Response.json({error:'Send JSON with a text field.'},{status:415});
   const reader=request.body?.getReader();let bytes=0;let body='';const decoder=new TextDecoder();
   try{
     if(reader)for(;;){const {done,value}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>64000){await reader.cancel();return Response.json({error:'The request is too large.'},{status:413});}body+=decoder.decode(value,{stream:true});}
-    body+=decoder.decode();const result=analyze(JSON.parse(body));
+    body+=decoder.decode();const result=await processor(JSON.parse(body));
     return Response.json(result,{headers:{'Cache-Control':'no-store','X-Model-Version':report.version}});
   }catch(error){
     const message=error instanceof SyntaxError?'The request must contain valid JSON.':error instanceof Error?error.message:'Analysis could not be completed.';
     return Response.json({error:message},{status:422,headers:{'Cache-Control':'no-store'}});
   }
 }
+export const handleAnalysis=(request:Request)=>handleTextRequest(request,analyze);

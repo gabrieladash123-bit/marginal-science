@@ -45,6 +45,18 @@ Clarity review applies explicit, individually selectable phrase edits, with undo
 
 The optional local model is `Xenova/LaMini-Flan-T5-77M`, pinned to revision `ac7ed8dcdab558daa9d648678e8545a919a81f85`, through Transformers.js 3.8.1. It downloads about 120 MB including the runtime on first use and runs in a web worker. It supports drafts up to 220 words, with cancellation and a five-minute timeout. Each pass reviews at most two sentences of 8–45 words, prioritizing matching clarity phrases, then length. Failed protected-value, lexical-retention or explicit qualifier checks retain that original sentence; sentences outside the pass also remain intact. A final manuscript check runs before review. These checks cannot establish semantic equivalence. The conservative clarity tool remains available when the model fails or downloads are blocked. The app does not optimize text against detector scores or promise detector evasion.
 
+## Research notebook
+
+The workspace now includes a research notebook with three connected tools:
+
+- **Claim change ledger.** Save up to eight checkpoints, select a baseline, and compare it with the editable current draft. Exact normalized sentences match first; remaining sentences use a deterministic greedy word-set alignment with a 0.38 overlap threshold. Each sentence is assigned at most once. The ledger tracks changed quantities/comparators/units, citation spans, negation wording, removed uncertainty markers and association-to-causation wording. Added, removed and shifted sentences remain inspectable. Expand a row for a word diff. Checkpoint restoration has an undo path.
+- **Model robustness probes.** `/api/robustness` runs whitespace normalization, Unicode normalization, citation ablation, sentence-order reversal and opening-sentence ablation with the serving classifier. Results include probability shifts, Jensen–Shannon divergence in bits, decision changes and vocabulary coverage. Out-of-bounds ablations are explicitly skipped. The client verifies input/model identity, probability normalization, derived labels and summary measurements; editing or cancelling invalidates outstanding results.
+- **Portable review records.** Export both drafts, the audit engine version, classifier identity and a recomputable ledger in a JSON record with a SHA-256 checksum. Import checks the checksum, model identity, structure and recomputed audit before restoring the draft. The prior draft becomes a checkpoint. Probe measurements can also be exported separately.
+
+The built-in comparison is an illustrative observational-study abstract, with deliberately changed participant counts and stronger claims. It is authored demo text, not a real study. Checkpoints stay in tab memory; export a review before reloading or closing the page. The app does not persist manuscript text.
+
+Comparisons support 18,000 characters and 120 sentences per draft. Sentence alignment and scientific-language checks are heuristics: similar claims can be matched ambiguously, implicit changes can be missed, and formatting can produce flags. Citation detection does not verify source existence or evidence quality. Authors review scientific meaning. Review files are unsigned; a checksum detects content changes against the supplied checksum and cannot authenticate the creator or prevent someone generating a new record. Stability probes describe this draft; order and omission probes change information or context. Reported benchmark metrics apply to the existing classifier.
+
 ## Verification and deployment
 
 ```bash
@@ -59,6 +71,8 @@ vercel --prod
 `node scripts/check-deployment.mjs` checks the public API against local predictions and verifies input rejection. `APP_URL=https://marginal-science.vercel.app node scripts/browser-check.mjs` checks the deployed editor, revision review, undo, navigation and responsive layouts (requires Chrome). The manually dispatched `Verify browser-local rewrite` workflow starts the app, checks model downloading, draft generation, application and undo in Chromium, and saves its report and screenshot as an artifact.
 
 `Verify public deployment` runs the API parity and responsive browser checks against the public Vercel URL from a Linux runner, independently of the developer's local network.
+
+`APP_URL=http://127.0.0.1:5188 node scripts/notebook-check.mjs` checks the notebook against a production preview, including real probes, checkpoint restoration/undo, export/import, altered files, size limits, failed requests, wrong-source responses, cancellation, stale requests, keyboard details, inert text and responsive layouts. The `Verify research notebook` workflow runs those checks against production in Chromium and Firefox, retaining JSON reports and screenshots. Unit tests include 500 deterministic probability-distance cases, artifact parity, audit bounds and forged-audit rejection. `npm run test:runtime` exercises the compiled analysis and robustness entry points.
 
 ## Attribution
 
