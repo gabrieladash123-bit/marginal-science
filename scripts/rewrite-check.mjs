@@ -6,7 +6,7 @@ try{
   const page=browser.pages()[0]??await browser.newPage();
   const failures=[];page.on('pageerror',error=>failures.push(error.message));
   await page.goto(process.env.APP_URL??'http://127.0.0.1:5173',{waitUntil:'networkidle'});
-  await page.getByRole('tab',{name:/Revision review/}).click();
+  await page.getByRole('tab',{name:'Humanize',exact:true}).click();
   await page.getByRole('textbox',{name:'Scientific abstract',exact:true}).fill('In order to assess the stability of research findings, we compared estimates from 120 independent studies [1]. The method utilizes repeated sampling to identify patterns that remain consistent across groups. We observed that combining study-level estimates may improve interpretability without reducing uncertainty about individual findings. Further validation is required before the method can be used in clinical research.');
   const original=await page.getByRole('textbox',{name:'Scientific abstract',exact:true}).inputValue();
   const started=Date.now();let status='';const attempts=[];
@@ -25,7 +25,7 @@ try{
     attempts.push({elapsed:Date.now()-attemptStarted,error:attemptError});
     if(!attemptError?.includes('took too long'))break;
   }
-  const draft=await page.locator('.model-draft>p').textContent().catch(()=>null);
+  const draft=await page.locator('.model-draft .humanize-output').textContent().catch(()=>null);
   const error=await page.locator('.alert.error').textContent().catch(()=>null);
   const unchanged=(await page.getByRole('textbox',{name:'Scientific abstract',exact:true}).inputValue())===original;
   await mkdir('artifacts/browser',{recursive:true});
@@ -37,7 +37,7 @@ try{
   expect(draft).not.toBe(original);
   expect(draft).toContain('120');expect(draft).toContain('[1]');
   expect(draft).toContain('may');expect(draft).toContain('without');
-  await page.getByRole('button',{name:'Apply reviewed draft',exact:true}).click();
+  await page.getByRole('button',{name:'Apply humanized draft',exact:true}).click();
   await expect(page.getByRole('textbox',{name:'Scientific abstract',exact:true})).toHaveValue(draft);
   await page.getByRole('button',{name:'Undo',exact:true}).click();
   await expect(page.getByRole('textbox',{name:'Scientific abstract',exact:true})).toHaveValue(original);

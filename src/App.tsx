@@ -5,6 +5,7 @@ import type {Analysis} from '../lib/service.ts';
 import {applyEdits,clarityEdits,protectedValues,validateRewrite,wordCount,writingStats,type Edit} from '../lib/writing.ts';
 import {exampleText,exampleTitle,conciseExample,sourceUrl} from './examples.ts';
 import ResearchNotebook from './ResearchNotebook.tsx';
+import HumanizePanel from './HumanizePanel.tsx';
 
 type View='workspace'|'model'|'system';
 const labels=['Human-written references','AI-revised references','AI-generated references'];
@@ -27,11 +28,10 @@ function Workspace(){
   const [mode,setMode]=useState<'writing'|'notebook'>('writing');
   const [text,setText]=useState(exampleText);const [title,setTitle]=useState(exampleTitle);
   const [analysis,setAnalysis]=useState<Analysis|null>(null);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
-  const [panel,setPanel]=useState<'signals'|'review'>('signals');const [example,setExample]=useState(true);
+  const [panel,setPanel]=useState<'signals'|'review'|'humanize'>('signals');const [example,setExample]=useState(true);
   const [selected,setSelected]=useState<Set<number>>(new Set());const [previous,setPrevious]=useState<string|null>(null);
-  const [notice,setNotice]=useState('');const [modelDraft,setModelDraft]=useState('');const [modelBusy,setModelBusy]=useState(false);
-  const [modelProgress,setModelProgress]=useState('');const [copied,setCopied]=useState(false);
-  const textarea=useRef<HTMLTextAreaElement>(null);const controller=useRef<AbortController|null>(null);const draftRef=useRef(text);const worker=useRef<Worker|null>(null);const modelTimer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined);
+  const [notice,setNotice]=useState('');const [copied,setCopied]=useState(false);
+  const textarea=useRef<HTMLTextAreaElement>(null);const controller=useRef<AbortController|null>(null);const draftRef=useRef(text);const humanizeTab=useRef<HTMLButtonElement>(null);
   const stats=useMemo(()=>writingStats(text),[text]);const edits=stats.edits;
   const selectedEdits=edits.filter(edit=>selected.has(edit.id));
   const canAnalyze=stats.words>=60&&stats.words<=1200&&text.length<=18000;
@@ -44,29 +44,17 @@ function Workspace(){
     }catch(reason){if(!next.signal.aborted)setError(reason instanceof Error?reason.message:'The service could not be reached. Try again.');}
     finally{if(!next.signal.aborted)setBusy(false);}
   }
-  useEffect(()=>{void runAnalysis(exampleText);return()=>{controller.current?.abort();worker.current?.terminate();clearTimeout(modelTimer.current);};},[]);
+  useEffect(()=>{void runAnalysis(exampleText);return()=>{controller.current?.abort();};},[]);
   useEffect(()=>{setSelected(new Set(edits.map(edit=>edit.id)));},[text]);
-  function update(value:string){controller.current?.abort();worker.current?.terminate();worker.current=null;clearTimeout(modelTimer.current);setModelBusy(false);setBusy(false);draftRef.current=value;setText(value);setAnalysis(null);setError('');setPrevious(null);setModelDraft('');setNotice('');setExample(false);}
+  function update(value:string){controller.current?.abort();setBusy(false);draftRef.current=value;setText(value);setAnalysis(null);setError('');setPrevious(null);setNotice('');setExample(false);}
   function loadExample(concise=false){const value=concise?conciseExample:exampleText;update(value);setTitle(exampleTitle);setExample(true);setPanel('signals');void runAnalysis(value);}
-  function applyRevision(value:string){if(!validateRewrite(text,value)){setError('The revision changed protected content or removed too much detail. It was blocked.');return;}setPrevious(text);draftRef.current=value;setText(value);setAnalysis(null);setModelDraft('');setModelBusy(false);setExample(false);setNotice('Revision applied. Review scientific meaning before using it.');}
+  function applyRevision(value:string){if(!validateRewrite(text,value)){setError('The revision changed protected content or removed too much detail. It was blocked.');return;}controller.current?.abort();setBusy(false);setPrevious(text);draftRef.current=value;setText(value);setAnalysis(null);setExample(false);setNotice('Revision applied. Review scientific meaning before using it.');}
   function applyClarity(){try{applyRevision(applyEdits(text,selectedEdits));}catch(reason){setError((reason as Error).message);}}
   function undo(){if(previous!==null){const value=previous;update(value);setNotice('Previous draft restored.');}}
   function toggle(id:number){setSelected(current=>{const next=new Set(current);next.has(id)?next.delete(id):next.add(id);return next;});}
   async function copy(){try{await navigator.clipboard.writeText(text);setCopied(true);setTimeout(()=>setCopied(false),1800);}catch{setNotice('Clipboard access is unavailable. Select the text and copy it.');}}
   function download(){const url=URL.createObjectURL(new Blob([title+'\n\n'+text],{type:'text/plain;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='marginal-abstract.txt';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-  function startModel(){
-    if(stats.words>220){setError('The local rewrite model supports up to 220 words. Shorten the draft or use the clarity review.');return;}
-    setModelBusy(true);setModelProgress('Preparing local model download');setError('');setNotice('');setModelDraft('');
-    const source=text;const instance=worker.current??new Worker(new URL('./rewrite.worker.ts',import.meta.url),{type:'module'});worker.current=instance;
-    clearTimeout(modelTimer.current);modelTimer.current=setTimeout(()=>{instance.terminate();worker.current=null;setModelBusy(false);setError('The model took too long to download or run. Retry on a faster connection, or use the clarity review.');},300000);
-    instance.onerror=()=>{clearTimeout(modelTimer.current);setModelBusy(false);setError('The local model could not start. The clarity review is still available.');};
-    instance.onmessage=event=>{const data=event.data;if(data.type==='progress'){const p=data.progress;setModelProgress(p.status==='progress'?`Downloading model: ${Math.round(p.progress??0)}%`:'Preparing local model');}
-      if(data.type==='working')setModelProgress(`Reviewing sentence ${data.index} of ${data.total} on your device`);
-      if(data.type==='error'){clearTimeout(modelTimer.current);setModelBusy(false);setError(data.message);}
-      if(data.type==='result'){clearTimeout(modelTimer.current);setModelBusy(false);if(draftRef.current!==source)return;if(!data.changed)setNotice('No model edits passed the checks. Your manuscript is unchanged.');else if(validateRewrite(source,data.text))setModelDraft(data.text);else setError('The model changed protected content or omitted detail. Its draft was blocked; use the clarity review below.');}
-    };instance.postMessage({text:source});
-  }
-  function cancelModel(){worker.current?.terminate();worker.current=null;clearTimeout(modelTimer.current);setModelBusy(false);setModelProgress('');}
+  function openHumanizer(){setPanel('humanize');requestAnimationFrame(()=>{humanizeTab.current?.scrollIntoView({block:'center',behavior:'instant'});humanizeTab.current?.focus({preventScroll:true});});}
   return <>
     <section className="workspace-heading"><div><div className="context-line"><Leaf size={15} weight="bold"/>A little perspective for your paper</div><h1>Your research. Your voice.</h1><p>Understand the writing. Refine the language. Keep the science intact.</p></div><button className="button secondary example-button" onClick={()=>loadExample()}><BookOpen size={17}/>Try an example<ArrowRight size={15}/></button></section>
     <div className="workspace-modes" aria-label="Workspace tools"><button aria-pressed={mode==='writing'} onClick={()=>setMode('writing')}>Writing workspace</button><button aria-pressed={mode==='notebook'} onClick={()=>setMode('notebook')}>Research notebook<Flask size={15}/></button><span>Compare claims. Inspect model stability.</span></div>
@@ -76,10 +64,10 @@ function Workspace(){
         <div className="abstract-label">Abstract</div><textarea ref={textarea} aria-label="Scientific abstract" className="manuscript" value={text} spellCheck onChange={event=>update(event.target.value)} onKeyDown={event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter'&&canAnalyze){event.preventDefault();void runAnalysis();}}} placeholder="Paste your scientific abstract here. Use at least 60 words for analysis."/>
         <div className="paper-note"><ShieldCheck size={15}/><span>Citations, quantities, and quoted text are protected in revision review.</span></div>
       </div>
-      <div className="editor-footer"><div className="word-status"><strong className={!canAnalyze?'over-limit':''}>{stats.words.toLocaleString()} words</strong><span>{stats.sentences} sentences</span><span className="keyboard-hint">Ctrl + Enter</span></div><button className="button primary" onClick={()=>void runAnalysis()} disabled={!canAnalyze||busy}>{busy?<span className="loading-dot"/>:<MagnifyingGlass size={17}/>} {busy?'Analyzing':'Analyze writing'}{!busy&&<ArrowRight size={16}/>}</button></div>
+      <div className="editor-footer"><div className="word-status"><strong className={!canAnalyze?'over-limit':''}>{stats.words.toLocaleString()} words</strong><span>{stats.sentences} sentences</span><span className="keyboard-hint">Ctrl + Enter</span></div><div className="editor-actions"><button className="button secondary" onClick={openHumanizer}><Sparkle size={17}/>Humanize text</button><button className="button primary" onClick={()=>void runAnalysis()} disabled={!canAnalyze||busy}>{busy?<span className="loading-dot"/>:<MagnifyingGlass size={17}/>} {busy?'Analyzing':'Analyze writing'}{!busy&&<ArrowRight size={16}/>}</button></div></div>
       {!canAnalyze&&<p className="input-help">Analysis supports 60 to 1,200 words and at most 18,000 characters.</p>}
     </section>
-    <aside className="insight-surface" aria-label="Writing insights"><div className="panel-tabs" role="tablist" aria-label="Insight view"><button role="tab" aria-selected={panel==='signals'} onClick={()=>setPanel('signals')}>Writing signals</button><button role="tab" aria-selected={panel==='review'} onClick={()=>setPanel('review')}>Revision review{edits.length>0&&<span className="count-badge">{edits.length}</span>}</button></div>
+    <aside className="insight-surface" aria-label="Writing insights"><div className="panel-tabs" role="tablist" aria-label="Insight view" onKeyDown={event=>{const tabs=Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role=tab]'));const index=tabs.indexOf(document.activeElement as HTMLButtonElement);if(index<0)return;const next=event.key==='ArrowRight'?(index+1)%tabs.length:event.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:event.key==='Home'?0:event.key==='End'?tabs.length-1:-1;if(next>=0){event.preventDefault();tabs[next].click();tabs[next].focus();}}}><button role="tab" tabIndex={panel==='signals'?0:-1} aria-selected={panel==='signals'} onClick={()=>setPanel('signals')}>Writing signals</button><button role="tab" tabIndex={panel==='review'?0:-1} aria-selected={panel==='review'} onClick={()=>setPanel('review')}>Revision review{edits.length>0&&<span className="count-badge">{edits.length}</span>}</button><button ref={humanizeTab} role="tab" tabIndex={panel==='humanize'?0:-1} aria-selected={panel==='humanize'} onClick={()=>setPanel('humanize')}>Humanize</button></div>
       <div className="panel-content" role="tabpanel">
         {error&&<div className="alert error" role="alert"><WarningCircle size={18}/><span>{error}</span><button className="small-icon" onClick={()=>setError('')} aria-label="Dismiss error"><X size={15}/></button></div>}
         {notice&&<div className="alert success" role="status"><CheckCircle size={17}/><span>{notice}</span>{previous!==null&&<button onClick={undo}>Undo</button>}</div>}
@@ -93,14 +81,10 @@ function Workspace(){
           </>:<div className="empty-state"><MagnifyingGlass size={30}/><h2>Give your draft a closer look.</h2><p>Analyze your abstract to see text patterns, confidence, and the terms influencing the model.</p><button className="text-button" disabled={!canAnalyze} onClick={()=>void runAnalysis()}>Analyze this draft<ArrowRight size={15}/></button></div>}
           <div className="readability"><div className="subheading">A quick writing check</div><dl><div><dt>Average sentence</dt><dd>{stats.averageSentence.toFixed(1)} <span>words</span></dd></div><div><dt>Long sentences</dt><dd>{stats.longSentences.length}</dd></div><div><dt>Clarity suggestions</dt><dd><button className="text-button" onClick={()=>setPanel('review')}>{edits.length}<ArrowRight size={13}/></button></dd></div></dl></div>
           <a className="model-link" href="#model"><Flask size={16}/><span>How the model was evaluated</span><ArrowUpRight size={15}/></a>
-        </>:<>
+        </>:panel==='humanize'?<HumanizePanel text={text} onApply={applyRevision}/>:<>
           <div className="panel-heading"><Sparkle size={18}/><span>A lighter touch, a clearer draft</span></div><h2 className="review-heading">Make every word earn its place.</h2><p className="panel-description">Review precise clarity edits. Citations and quantities stay unchanged; scientific meaning needs your review.</p>
           <div className="protection-note"><ShieldCheck size={18}/><span>{protectedCount} protected spans checked<span>Numbers, citations, quotes, and notation</span></span></div>
           {edits.length>0?<><div className="review-summary"><strong>{edits.length} suggested edits</strong><button className="text-button" onClick={()=>setSelected(selected.size===edits.length?new Set():new Set(edits.map(edit=>edit.id)))}>{selected.size===edits.length?'Deselect all':'Select all'}</button></div><div className="edit-list">{edits.map(edit=><label className="edit-item" key={edit.id}><input type="checkbox" checked={selected.has(edit.id)} onChange={()=>toggle(edit.id)}/><span><span className="edit-diff"><del>{edit.before}</del><ArrowRight size={13}/><ins>{edit.after||'Remove'}</ins></span><span className="edit-reason">{edit.reason}</span></span></label>)}</div><button className="button primary full" disabled={!selectedEdits.length} onClick={applyClarity}>Apply {selectedEdits.length} selected {selectedEdits.length===1?'edit':'edits'}<ArrowRight size={16}/></button></>:<div className="clean-state"><CheckCircle size={26}/><strong>No stock phrases to shorten.</strong><p>The clarity pass found no matching phrases. This does not evaluate scientific accuracy.</p></div>}
-          <div className="experimental"><div><Sparkle size={15}/><strong>Local model rewrite</strong><span>Experimental</span></div><p>Reviews up to two sentences per pass, prioritizing wordy phrasing. Other sentences stay intact. First use downloads about 120 MB. Up to 220 words; review scientific meaning before applying.</p>
-            {modelBusy?<><p className="model-progress" role="status">{modelProgress}</p><button className="button secondary full" onClick={cancelModel}>Cancel rewrite<X size={15}/></button></>:<button className="button secondary full" onClick={startModel} disabled={!text.trim()}>Generate a draft<Sparkle size={16}/></button>}
-            {modelDraft&&<div className="model-draft"><p>{modelDraft}</p><button className="button primary full" onClick={()=>applyRevision(modelDraft)}>Apply reviewed draft<Check size={15}/></button></div>}
-          </div>
         </>}
       </div></aside></div>
     <section className="below-workspace"><div><ShieldCheck size={22}/><div><strong>Your ideas stay yours.</strong><p>Analysis is processed without app storage. Local rewrites run in your browser.</p></div></div><div><BookOpen size={22}/><div><strong>Built around research writing.</strong><p>Evidence from scientific abstracts, with uncertainty and limitations in view.</p></div></div><a href="#model">Read the model report<ArrowUpRight size={17}/></a></section>

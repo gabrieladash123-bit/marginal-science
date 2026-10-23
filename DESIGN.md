@@ -22,6 +22,8 @@ Product register with the restrained Stitch system. Compact top navigation rathe
 ## Interaction
 Analyze is the main action. Editing invalidates old results. Revisions show exact before/after changes and preserve an undo snapshot. A running local model has download progress and cancellation. Empty/error states give an actionable recovery path. Motion uses opacity/transform at 160ms and respects reduced motion.
 
+Humanize text is a visible companion action beneath the manuscript. Its insight tab offers Natural academic and Concise academic styles, an explicit review preview, exact word changes, copy/download, and apply with undo. Instant phrase editing and the optional deeper local model are named separately. Both reuse the existing typography and action colors. Changing the source or style clears the old preview.
+
 The Workspace contains Writing workspace and Research notebook modes sharing one manuscript. The notebook pairs a baseline with the current draft, uses a flat expandable claim ledger, and exposes model probes below the comparison. It retains the same light canvas, paper typography and action tokens. Checkpoints and review import/export use explicit actions; no manuscript persistence is implied. Scientific flags carry text explanations and never imply a proof of correctness.
 
 ## References
