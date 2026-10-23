@@ -9,7 +9,7 @@ import {protectedValues} from '../lib/writing.ts';
 const base=process.env.APP_URL??'http://127.0.0.1:5188';
 const neural=process.env.TEST_NEURAL==='1';
 await mkdir('artifacts/browser',{recursive:true});
-const context=await chromium.launchPersistentContext('artifacts/browser/text-matrix-profile',{channel:process.env.CI?undefined:'chrome',headless:true,viewport:{width:1440,height:1000}});
+const context=await chromium.launchPersistentContext('artifacts/browser/text-matrix-profile',{channel:process.env.BROWSER_CHANNEL??(process.env.CI?undefined:'chrome'),headless:true,viewport:{width:1440,height:1000}});
 const report={base,illustrativeTexts:true,texts:scientificTexts.length,phraseResults:[],modelResults:[],errors:[]};
 let failure;
 try{
