@@ -19,10 +19,14 @@ jobs:
       - run: node scripts/browser-check.mjs
         env:
           APP_URL: https://marginal-science.vercel.app
+      - run: node scripts/humanize-check.mjs
+        env:
+          APP_URL: https://marginal-science.vercel.app
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: public-deployment-verification
           path: |
             artifacts/browser/report.json
+            artifacts/browser/humanize.json
             artifacts/browser/*.png
